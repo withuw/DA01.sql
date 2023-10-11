@@ -9,13 +9,13 @@ WHERE COUNTRYCODE = 'JPN';
 SELECT CITY, STATE FROM STATION;
 ---EX4
 select CITY from STATION
-where CITY LIKE IN ('a%','e%','i%','o%','u%');
+where CITY LIKE 'a%' or CITY like'e%' or CITY like'i%' or CITY like'o%' or CITY like'u%';
 ---EX5
 select CITY from STATION
-where CITY LIKE IN ('%a','%e','%i','%o','%u');
+where CITY LIKE '%a' or CITY like'%e' or CITY like'%i' or CITY like'%o' or CITY like'%u';
 ---EX6
 select CITY from STATION
-where CITY LIKE IN ('a%','e%','i%','o%','u%');
+where NOT (CITY LIKE 'a%' or CITY like'e%' or CITY like'i%' or CITY like'o%' or CITY like'u%');
 ---EX7
 SELECT name from Employee
 ORDER BY name asc;
