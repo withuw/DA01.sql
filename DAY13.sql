@@ -12,7 +12,37 @@ from duplicate
 where job_count>1
 
 ---ex2
-  
+with appliance_ranking AS
+(
+select category, product,
+sum(spend) as total_spend
+from product_spend
+where category = 'appliance'
+and extract(year from transaction_date)=2022
+group by category, product
+order by total_spend DESC
+limit 2
+),
+
+electronics_ranking AS
+(
+select category, product,
+sum(spend) as total_spend
+from product_spend
+where category = 'electronics'
+and extract(year from transaction_date)=2022
+group by category, product
+order by total_spend DESC
+limit 2
+)
+
+select category, product, total_spend
+from appliance_ranking
+UNION
+select category, product, total_spend
+from electronics_ranking
+
+
 ---ex3
 with member_calls as
 (
@@ -35,6 +65,19 @@ WHERE b.page_id is null
 ORDER BY a.page_id ASC;
 
 --ex5
+
+with mau_count AS
+(
+SELECT user_id as mau
+from user_actions
+where extract(month from event_date)= 06 or extract(month from event_date)= 07
+AND extract(year from event_date)= 2022
+group by user_id
+having count(distinct extract(month from event_date))= 2
+)
+
+select '7' as month, count(mau) as monthly_active_users from mau_count
+
 
 --ex6
 select left(trans_date,7) as month, country,
@@ -77,7 +120,36 @@ from duplicate
 where job_count>1
 
 --ex11
+with top_name AS
+(
+select a.name,
+count(b.user_id) as user_id_count
+from Users as a
+JOIN MovieRating as b
+ON a.user_id = b.user_id
+group by b.user_id
+order by user_id_count desc, a.name asc
+limit 1
+),
 
+top_movie as
+(
+select c.title,
+avg(b.rating) as rating_average
+from Movies as c
+JOIN MovieRating as b
+ON b.movie_id = c.movie_id
+where created_at between '2020-01-31' and '2020-02-29'
+group by c.movie_id
+order by rating_average desc, c.title asc
+limit 1
+)
+
+select name as results from top_name
+UNION ALL
+select title as results from top_movie
+
+--ex12
 
 
 
