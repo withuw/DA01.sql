@@ -150,7 +150,17 @@ UNION ALL
 select title as results from top_movie
 
 --ex12
+with ranking as
+(
+select requester_id as id from RequestAccepted
+union all
+select accepter_id as id from RequestAccepted
+)
 
+select id, count(*) as num  from ranking 
+group by id 
+order by num desc 
+limit 1
 
 
 
