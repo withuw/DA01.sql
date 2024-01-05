@@ -33,6 +33,39 @@ from seat
 order by id
 
 --ex4
+with base as (
+select visited_on,
+sum(amount) as total_amount,
+row_number () over (order by visited_on) as stt
+from Customer
+group by visited_on
+order by visited_on
+)
+
+select visited_on,
+sum(total_amount) over (order by visited_on) as amount
+from base
+where visited_on <= interval '6 days'
+
+tamj th
+
+
+
+
+
+--ex5
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
