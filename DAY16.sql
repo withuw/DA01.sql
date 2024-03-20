@@ -47,13 +47,15 @@ sum(total_amount) over (order by visited_on) as amount
 from base
 where visited_on <= interval '6 days'
 
-tamj th
-
-
-
-
-
 --ex5
+SELECT    
+user_id,    
+tweet_date,   
+ROUND(AVG(tweet_count) OVER (PARTITION BY user_id ORDER BY tweet_date     
+ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) ,2) AS rolling_avg_3d
+FROM tweets;
+
+--ex6
 
 
 
