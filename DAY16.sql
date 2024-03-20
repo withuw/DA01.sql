@@ -56,7 +56,43 @@ ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) ,2) AS rolling_avg_3d
 FROM tweets;
 
 --ex6
+with base as (
+select b.name as Department, a.name as Employee, a.salary as Salary,
+dense_rank () over (partition by b.name order by a.salary desc) as stt
+from Employee as a
+JOIN Department as b
+ON a.departmentId=b.id
+)
+select Department, Employee, Salary from base
+where stt <=3
 
+--ex7
+with base as(
+select *,
+rank () over (order by turn) as stt,
+sum(weight) over (order by weight) as accumulative
+from Queue
+)
+
+select person_name from base
+where
+accumulative > 1000
+limit 1
+
+--ex8
+select product_id, new_price as price from Products
+where (product_id, change_date) in 
+(select product_id, max(change_date) from Products
+where change_date <= "2019-08-16"
+group by product_id)
+union
+select product_id, 10 as price from Products
+where change_date >= "2019-08-16" and 
+product_id not in 
+(select product_id 
+from Products 
+where change_date <= "2019-08-16")
+group by product_id 
 
 
 
