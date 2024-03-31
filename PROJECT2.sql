@@ -9,7 +9,11 @@ where  status = 'Complete'
 and created_at between '2019-01-01' and '2022-04-30'
 group by month_year order by month_year
 ;
-select * from bigquery-public-data.thelook_ecommerce.order_items
+
+Insights: 
+  - Nhìn chung, số lượng đơn hàng và số lượng khách hàng mỗi tháng tăng mạnh theo thời gian, từ 1/2019 - 4/2022 (tăng 127 lần)
+  - Số lượng đơn hàng và số lượng khách hàng mỗi tháng có mối tương quan với nhau, SL khách hàng giảm thì SL đơn hàng giảm và ngược lại
+  - Peak: 2/2022
 
 --2.Giá trị đơn hàng trung bình (AOV) và số lượng khách hàng mỗi tháng
 select
@@ -20,6 +24,11 @@ from bigquery-public-data.thelook_ecommerce.order_items
 where created_at between '2019-01-01' and '2022-04-30'
 group by month_year order by month_year
 ;
+
+Insight:
+  - Nhìn chung, giá trị đơn hàng trung bình và số lượng khách hàng mỗi tháng tăng nhưng không đều
+  - Những tháng trong 1 năm gần đây, giá trị đơn hàng tăng, giảm liên tục theo từng tháng, nhưng dao động trong khoảng ~58 - ~61
+  - Peak distinct user vào tháng 3/2022, nhưng giá trị đơn hàng trung bình không cao so với những tháng trước
 
 --3. Nhóm khách hàng theo độ tuổi
 
@@ -49,6 +58,18 @@ count (*)
 from base
 group by gender, tag
 
+  Insights:
+  - Độ tuổi nhỏ nhất: 12 (bằng nhau với cả 2 giới)
+  + Nam: 485 người
+  + Nữ: 516 người
+  
+  - Độ tuổi lớn nhất: 70 (bằng nhau với cả 2 giới)
+  + Nam: 553 người
+  + Nữ: 510 người
+
+
+
+  
 --4.Top 5 sản phẩm mỗi tháng
 
 with base as (
