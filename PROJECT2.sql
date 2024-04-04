@@ -129,3 +129,39 @@ total_sales*total_items as revenue
 from total
 group by dates,category,revenue
 order by dates, category
+
+  
+------------
+
+III. Tạo metric trước khi dựng dashboard
+
+create view vw_ecommerce_analyst as (
+with base1 as(
+select 
+format_date('%Y-%m', b.created_at) AS month,
+format_date('%Y', b.created_at) AS year,
+a.category as product_category,
+sum(b.sale_price) as TPV,
+count(distinct order_id) as TPO,
+sum(a.cost) as total_cost,
+sum(b.sale_price) - sum(a.cost) as total_profit,
+(sum(b.sale_price) - sum(a.cost))/sum(a.cost) as profit_to_cost_ratio
+from bigquery-public-data.thelook_ecommerce.products as a
+JOIN bigquery-public-data.thelook_ecommerce.order_items as b
+ON a.id = b.product_id
+where b.created_at between '2019-01-01' and '2022-04-30'
+group by month, year, a.category
+order by month, year, a.category
+),
+
+base2 as
+(
+select *,
+concat(round(100.00* (lead(TPV) over (partition by product_category order by month) - TPV) / TPV,2), '%') as revenue_growth,
+concat(round(100.00* (lead(TPO) over (partition by product_category order by month) - TPO) / TPO,2), '%') as order_growth
+from base1
+order by product_category
+)
+
+select * from base2
+)
