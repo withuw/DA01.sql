@@ -165,3 +165,62 @@ order by product_category
 
 select * from base2
 )
+
+---customer cohort
+with main as (SELECT 
+user_id, sale_price, created_at,
+format_date('%Y-%m', first_purchase_date) as cohort_date,
+(extract(year from created_at)-extract(year from first_purchase_date))*12
++(extract(month from created_at)-extract(month from first_purchase_date))+1 as index
+FROM(
+SELECT user_id, sale_price,
+MIN(created_at) over(PARTITION BY user_id) as first_purchase_date,
+created_at
+from bigquery-public-data.thelook_ecommerce.order_items
+))
+,index_table as (
+SELECT 
+cohort_date,
+index,
+count(distinct user_id) as cnt,
+sum(sale_price) as revenue
+from main
+group by cohort_date, index)
+,customer_cohort as (
+select
+cohort_date,
+sum(case when index=1 then cnt else 0 end ) as m1,
+sum(case when index=2 then cnt else 0 end ) as m2,
+sum(case when index=3 then cnt else 0 end ) as m3,
+sum(case when index=4 then cnt else 0 end ) as m4
+
+from index_table
+group by cohort_date
+order by cohort_date)
+
+select * from customer_cohort
+
+----retention cohort
+select
+cohort_date,
+round(100.00* m1/m1,2)||'%' as m1,
+round(100.00* m2/m1,2)|| '%' as m2,
+round(100.00* m3/m1,2) || '%' as m3,
+round(100.00* m4/m1,2) || '%' as m4
+from customer_cohort
+
+---churn cohort
+select
+cohort_date,
+(100-round(100.00* m1/m1,2))||'%' as m1,
+(100-round(100.00* m2/m1,2))|| '%' as m2,
+(100-round(100.00* m3/m1,2)) || '%' as m3,
+round(100.00* m4/m1,2) || '%' as m4
+from customer_cohort
+
+--Nhận xét: 
++ Theo chiều dọc, nhìn chung, số lượng khách hàng mới của công ty tăng dần theo từng tháng.
++ Tuy nhiên, theo chiều ngang tỉ lệ khách hàng quay lại thấp.
++ Công ty cần tạo ra nhiều chiến dịch thu hút khách hàng quay lại, tạo lượng khách hàng trung thành nhất định,
+  đồng thời cải thiện chất lượng dịch vụ của mình.
+
