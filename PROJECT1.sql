@@ -41,18 +41,6 @@ SET contactlastname= INITCAP(contactlastname)
 UPDATE sales_dataset_rfm_prj
 SET contactfirstname= INITCAP(contactfirstname)
 
----Add columns QTR_ID, MONTH_ID, YEAR_ID, which are quarters, months, years extracted from ORDERDATE 
-
-ALTER TABLE sales_dataset_rfm_prj
-ADD COLUMN QTR_ID numeric, 
-ADD column MONTH_ID numeric, 
-ADD column YEAR_ID numeric
-
-UPDATE sales_dataset_rfm_prj
-SET QTR_ID= EXTRACT (quarter FROM orderdate),
-MONTH_ID= EXTRACT (month FROM orderdate),
-YEAR_ID= EXTRACT (year FROM orderdate)
-
 ---Find outliers for column QUANTITYORDERED (2 ways)
 
 ----1: Using Boxplot
