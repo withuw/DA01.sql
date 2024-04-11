@@ -1,4 +1,4 @@
---1. so luong don hang va so luong khach hang moi thang
+---Calculating the number of orders and customers each month
 
 select
 format_date('%Y-%m', created_at) AS month_year,
@@ -15,10 +15,9 @@ Insights:
   - Số lượng đơn hàng và số lượng khách hàng mỗi tháng có mối tương quan với nhau, SL khách hàng giảm thì SL đơn hàng giảm và ngược lại
   - Peak: 2/2022
 
---2.Giá trị đơn hàng trung bình (AOV) và số lượng khách hàng mỗi tháng
+---Calculating average order value (AOV)
 select
-format_date('%Y-%m', created_at) AS month_year,
-count (distinct user_id) as distinct_users,
+format_date('%Y-%m', created_at) AS month_year
 sum(sale_price)/count(order_id) as average_order_value,
 from bigquery-public-data.thelook_ecommerce.order_items
 where created_at between '2019-01-01' and '2022-04-30'
@@ -30,7 +29,7 @@ Insight:
   - Những tháng trong 1 năm gần đây, giá trị đơn hàng tăng, giảm liên tục theo từng tháng, nhưng dao động trong khoảng ~58 - ~61
   - Peak distinct user vào tháng 3/2022, nhưng giá trị đơn hàng trung bình không cao so với những tháng trước
 
---3. Nhóm khách hàng theo độ tuổi
+---Segment customers by age group
 
 with base as (
 select first_name, last_name, gender, age,
@@ -68,9 +67,7 @@ group by gender, tag
   + Nữ: 510 người
 
 
-
-  
---4.Top 5 sản phẩm mỗi tháng
+---Calculating top 5 products each month
 
 with base as (
 select
@@ -94,21 +91,7 @@ select * from ranking
 where ranking.rank_per_month <=5
 order by ranking.month_year
 
-
---5.Doanh thu tính đến thời điểm hiện tại trên mỗi danh mục
-  
-select a.category as product_categories,
-format_date('%Y-%m-%d', c.created_at) AS dates,
-(a.retail_price*sum(c.num_of_item)) as revenue
-from bigquery-public-data.thelook_ecommerce.products as a
-JOIN bigquery-public-data.thelook_ecommerce.order_items as b
-ON a.id = b.product_id
-JOIN bigquery-public-data.thelook_ecommerce.orders as c
-ON b.order_id = c.order_id
-where c.created_at between '2022-01-15' and '2022-04-15'
-group by a.category, dates, a.retail_price
-
---5.Doanh thu tính đến thời điểm hiện tại trên mỗi danh mục
+---Calculating revenue up to the current time in each category
 
 with total as(select a.category,
 sum(c.num_of_item) as total_items,
@@ -133,7 +116,7 @@ order by dates, category
   
 ------------
 
-III. Tạo metric trước khi dựng dashboard
+---Creating metrics for building dashboard
 
 create view vw_ecommerce_analyst as (
 with base1 as(
@@ -166,7 +149,8 @@ order by product_category
 select * from base2
 )
 
----customer cohort
+---Customer cohort analysis
+  
 with main as (SELECT 
 user_id, sale_price, created_at,
 format_date('%Y-%m', first_purchase_date) as cohort_date,
@@ -200,7 +184,7 @@ order by cohort_date)
 
 select * from customer_cohort
 
-----retention cohort
+----Customer retention cohort analysis
 select
 cohort_date,
 round(100.00* m1/m1,2)||'%' as m1,
@@ -209,14 +193,6 @@ round(100.00* m3/m1,2) || '%' as m3,
 round(100.00* m4/m1,2) || '%' as m4
 from customer_cohort
 
----churn cohort
-select
-cohort_date,
-(100-round(100.00* m1/m1,2))||'%' as m1,
-(100-round(100.00* m2/m1,2))|| '%' as m2,
-(100-round(100.00* m3/m1,2)) || '%' as m3,
-round(100.00* m4/m1,2) || '%' as m4
-from customer_cohort
 
 --Nhận xét: 
 + Theo chiều dọc, nhìn chung, số lượng khách hàng mới của công ty tăng dần theo từng tháng.
